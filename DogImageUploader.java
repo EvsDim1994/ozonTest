@@ -3,6 +3,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -40,10 +42,6 @@ public class DogImageUploader {
         Files.copy(inputStream, Paths.get(path));
         inputStream.close();
 
-        // Загрузка на Яндекс Диск
-        // (Здесь вы должны использовать API Яндекс Диска для загрузки файла)
-        // Примерный код для загрузки:
-        // uploadFileToYandexDisk(yandexToken, path);
         System.out.println("Uploaded to " + path);
     }
 
@@ -78,20 +76,35 @@ public class DogImageUploader {
         }
     }
 
-    // Метод для парсинга изображений из JSON (должен быть реализован)
+    // Метод для парсинга изображений из JSON
     private static List<String> parseJsonImages(String jsonResponse) {
-        // Реализуйте парсинг JSON и верните список изображений
-        return List.of(); // Замените на фактический код парсинга
+        String[] parts = jsonResponse.split("\"message\":");
+        if (parts.length > 1) {
+            String imagePart = parts[1].trim();
+            imagePart = imagePart.substring(1, imagePart.length() - 1); // Убираем кавычки
+            return Collections.singletonList(imagePart); // Возвращаем URL изображения
+        }
+        return null;
     }
 
-    // Метод для парсинга подпород из JSON (должен быть реализован)
+    // Метод для парсинга подпород из JSON
     private static List<String> parseJsonSubBreeds(String jsonResponse) {
-        // Реализуйте парсинг JSON и верните список подпород
-        return List.of(); // Замените на фактический код парсинга
+        List<String> subBreeds = new ArrayList<>();
+        String[] parts = jsonResponse.split("\"message\":");
+        if (parts.length > 1) {
+            String breedsPart = parts[1].trim();
+            breedsPart = breedsPart.substring(1, breedsPart.length() - 1); // Убираем скобки
+            String[] breedsArray = breedsPart.split(",");
+
+            for (String breed : breedsArray) {
+                subBreeds.add(breed.replaceAll("\"", "").trim()); // Убираем кавычки
+            }
+        }
+        return subBreeds;
     }
 
     public static void main(String[] args) {
-        String yandexToken = "ваш_токен_Яндекс_Диска";
+        String yandexToken = "y0_AgAAAAARdPVwAADLWwAAAAEUlQ33AABJz4YVUENLoYTXZx360pg2-o8lvw";
         try {
             uploadDogImages("spaniel", yandexToken);
         } catch (IOException e) {
